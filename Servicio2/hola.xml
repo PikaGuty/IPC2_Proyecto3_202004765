@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<terrenos>
+   <DTE>
+      <AUTORIZACION>hola</AUTORIZACION>
+      <FECHA>31/01/2021 16:54</FECHA>
+      <REFERENCIA>C1556</REFERENCIA>
+      <NIT_EMISOR>737810K</NIT_EMISOR>
+      <NIT_RECEPTOR>8338815</NIT_RECEPTOR>
+      <VALOR>12.00</VALOR>
+      <IVA>1.44</IVA>
+      <TOTAL>13.44</TOTAL>
+   </DTE>
+</terrenos>
