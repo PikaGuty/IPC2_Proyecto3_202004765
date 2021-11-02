@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>INICIO</title>
+  </head>
+  <body>
+    <style type="text/css">
+        body{
+            background: #56CCF2;
+            background: -webkit-linear-gradient(to right, #1d55a0, #759faa);
+            background: linear-gradient(to right, #1d55a0, #759faa);
+        }
+        .success{
+            list-style: none;
+            background-color: #F37335;
+            color: white;
+            box-shadow: 5px 5px 5px #FDC830;
+            text-align: center;
+            width: 700px;
+            
+        }
+    </style>
+    <!-- Incluyendo barra superior -->
+    {% include "barra.html" %}
+    <br><br><br><br><br><br>
+    {% if messages%}
+    <center>
+        <ul class="messages">
+            {% for message in messages%}
+                <li{% if message.tags %} class='{{message.tags}}'{% endif %}>{{message}}</li>
+            {% endfor %}
+        </ul>
+    </center>
+    {% endif %}
+    <div class="container mt-5">
+        <div class="row">
+          <div class="card" style="width: 25rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
+          background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
+          background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+          ">
+              <div class="card-body text-center" style="border-radius: 20px;">
+                  <div>
+                      <h4 style="font-family: Optima;">Cargar Archivo XML</h4>
+                      <hr>
+                  </div>
+  
+                  <!-- Form  Cargar-->
+                  
+                <form method="POST" action="">{% csrf_token %}
+                    {{el_form.as_p}}
+                    <input type="submit" class="btn btn-success" value="Cargar"/>
+                </form>
+                  
+                  <div id="formFooter">
+                    {% if messages%}
+                      <ul class="messages">
+                          {% for message in messages%}
+                          {% load static %}
+                          <form action="{% static 'salida.xml'%}">
+                            <input type="submit" class='btn btn-link' value="Abrir archivo XML" />
+                          </form>
+                          {% endfor %}
+                      </ul>
+                      
+                      {% endif %}
+                  </div>
+              </div>
+          </div> 
+        </div>
+      </div>
+
+      <div class="container mt-5">
+        <div class="row">
+          <div class="card" style="width: 35rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
+          background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
+          background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+          ">
+              <div class="card-body text-center" style="border-radius: 20px;">
+                  <div>
+                      <h4 style="font-family: Optima;">Cargar Archivo XML</h4>
+                      <hr>
+                  </div>
+  
+                  <!-- Form  Cargar-->
+                  
+                <form method="POST" action="">{% csrf_token %}
+                    {{the_form.as_p}}
+                    <input type="submit" class="btn btn-success" value="Cargar"/>
+                </form>
+                  
+                  <div id="formFooter">
+                    {% if messages%}
+                      <ul class="messages">
+                        {% for message in messages%}
+                          <li{% if message.tags %} class='{{message.tags}}'{% endif %}>{{message}}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                  </div>
+              </div>
+          </div> 
+        </div>
+      </div>
+      
+      <br><br><br><br><br>
+      <div style='text-align: right;' >
+        <form method="GET" action="http://192.168.1.8:3000/ReiniciarDatos">
+          <input type="submit" class='btn btn-danger' value="Reiniciar Datos" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </form> 
+      </div>
+      <br>
+    <!-- Incluyendo footer -->
+    {% include "pie.html" %}
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+  </body>
+</html>
+

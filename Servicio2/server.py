@@ -1,16 +1,21 @@
 from enum import auto
 from flask import Flask, request, jsonify
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 import re 
 from datetime import datetime
 
 #OBJETOS
 from dte import Obj_DTE
+from autorizado import Obj_aut
+
 from validaciones import validaciones
 from db import db
 
+
 listaDB=[]
+ret=[]
 
 app = Flask(__name__)
 
@@ -20,7 +25,31 @@ def obtener_datos():
     xml=str(xml_data, 'utf-8')
     print(xml)
     root = ET.fromstring(xml)
+    
+    #****** SALIDA ******
+    fecha=datetime.today().strftime('%d/%m/%Y')
+    no_facturas=0
+    errores=[]
+    no_correctos=0
+    no_emisores=0
+    no_receptores=0
+    aprob=[]
+    #********************
+    emi=[]
+    rec=[]
+    #****** SALIDA ******
+    eFecha=0
+    eReferencia=0
+    ePrecio=0
+    eIVA=0
+    eTotal=0
+    enite=0
+    enitr=0
+    eAut=0
+    #********************
+
     for DTE in root.findall('DTE'):
+        no_facturas+=1
         tiempo = DTE.find('TIEMPO').text.strip()
         referencia = DTE.find('REFERENCIA').text.strip()
         nit_emisor = DTE.find('NIT_EMISOR').text.replace(' ','')
@@ -36,19 +65,24 @@ def obtener_datos():
         
         if res.valf=='HORA INVALIDA'or res.valf=='FECHA INVALIDA':
             print('Error en fecha')
-            continuar=False
+            eFecha+=1
         elif res.valr == 'REFERENCIA_INVALIDA':
             print('Error en referencia')
-            continuar=False
+            eReferencia+=1
         elif res.valp=='VALOR_INCORRECTO' or res.valp=='IVA_MAL_CALCULADO' or res.valp=='TOTAL_MAL_CALCULADO':
             print('Error en valores')
-            continuar=False
+            if res.valp=='VALOR_INCORRECTO':
+                ePrecio+=1
+            elif res.valp=='IVA_MAL_CALCULADO':
+                eIVA+=1
+            elif res.valp=='TOTAL_MAL_CALCULADO':
+                eTotal+=1
         elif not res.valne:
             print('Error en nite')
-            continuar=False
+            enite+=1
         elif not res.valnr:
             print('Error en nitr')
-            continuar=False
+            enitr+=1
         else:
             listaDB=[]
             db.obtener(listaDB)
@@ -73,12 +107,54 @@ def obtener_datos():
             if ins:  
                 correlativo='{num:08d}'.format(num=co)
                 autorizacion=ano+mes+dia+correlativo
-                listaDB.append([autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total])
+                no_correctos+=1
+                aprob.append([autorizacion,res.valf, referencia, nit_emisor, nit_receptor, valor, iva, total])
+                listaDB.append([autorizacion,res.valf, referencia, nit_emisor, nit_receptor, valor, iva, total])
                 db.insertar(listaDB)
+                if nit_emisor in emi:
+                    pass
+                else:
+                    no_emisores+=1
+
+                if nit_receptor in rec:
+                    pass
+                else:
+                    no_receptores+=1
             else:
                 print('Error en numero de referencia')
-            
-    return str(type(xml))
+                eAut+=1
+    errores=[eFecha,eReferencia,ePrecio,eIVA,eTotal,enite,enitr,eAut]        
+    ret=[fecha,no_facturas,errores,no_correctos,no_emisores,no_receptores,aprob]
+    
+    root = ET.Element("LISTAAUTORIZACIONES")
+    doc = ET.SubElement(root, "AUTORIZACION")
+    ET.SubElement(doc, "FECHA").text=str(fecha)
+    ET.SubElement(doc, "FACTURAS_RECIBIDAS").text=str(no_facturas)
+    EE=ET.SubElement(doc, "ERRORES")
+
+    ET.SubElement(EE, "FECHAA").text=str(eFecha)
+    ET.SubElement(EE, "REFERENCIA").text=str(eReferencia)
+    ET.SubElement(EE, "PRECIO").text=str(ePrecio)
+    ET.SubElement(EE, "IVA").text=str(eIVA)
+    ET.SubElement(EE, "TOTAL").text=str(eTotal)
+    ET.SubElement(EE, "NIT_EMISOR").text=str(enite)
+    ET.SubElement(EE, "NIT_RECEPTOR").text=str(enitr)
+    ET.SubElement(EE, "REFERENCIA_DUPLICADA").text=str(eAut)
+
+    ET.SubElement(doc, "FACTURAS_CORRECTAS").text=str(no_correctos)
+    ET.SubElement(doc, "CANTIDAD_EMISORES").text=str(no_emisores)
+    ET.SubElement(doc, "CANTIDAD_RECEPTORES").text=str(no_receptores)
+    LA=ET.SubElement(doc, "LISTADO_AUTORIZACIONES")
+    for i in aprob:
+        AP=ET.SubElement(LA, "APROBACION")
+        ET.SubElement(AP, "NIT_EMISOR",ref=str(i[2])).text=str(i[3])
+        ET.SubElement(AP, "CODIGO_APROBACION").text=str(i[0])
+    ET.SubElement(LA, "TOTAL_APROBACIONES").text=str(no_correctos)
+           
+        
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+
+    return str(xmlstr)
 
 @app.route('/ReiniciarDatos',methods=['GET'])
 def reiniciar_datos():
@@ -87,7 +163,157 @@ def reiniciar_datos():
 
 @app.route('/ConsultaDatos',methods=['GET'])
 def consulta_datos():
+    
     return 'Consulta de Datos'
+
+@app.route('/ConsultaNIT',methods=['GET'])
+def consulta_NIT():
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoNIT=[]
+    for i in listaDB:
+        if i[3] not in listadoNIT:
+            listadoNIT.append(i[3])
+    return str(listadoNIT)
+
+@app.route('/ObtenerNIT',methods=['POST'])
+def obtener_NIT():
+    xml_data = request.data
+    xml=str(xml_data, 'utf-8')
+    print(xml)
+    root = ET.fromstring(xml)
+    selec = root.find('SELECCIONADO').text.strip()
+    #print(selec)  
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoNIT=[]
+    for i in listaDB:
+        if i[3] not in listadoNIT:
+            listadoNIT.append(i[3])
+
+    listaTransas=[]
+    for i in listaDB:
+        if listadoNIT[int(selec)]==i[3]:
+            listaTransas.append(i)
+#[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    root = ET.Element("LISTAAUTORIZACIONES")
+     
+    for i in listaTransas:
+        doc = ET.SubElement(root, "TRANSACCION")
+        ET.SubElement(doc, "AUTORIZACION").text=str(i[0])
+        ET.SubElement(doc, "TIEMPO").text=str(i[1])
+        ET.SubElement(doc, "REFERENCIA").text=str(i[2])
+        ET.SubElement(doc, "NIT_EMISOR").text=str(i[3])
+        ET.SubElement(doc, "NIT_RECEPTOR").text=str(i[4])
+        ET.SubElement(doc, "VALOR").text=str(i[5])
+        ET.SubElement(doc, "IVA").text=str(i[6])
+        ET.SubElement(doc, "TOTAL").text=str(i[7])
+        
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+
+    return str(xmlstr)
+
+
+
+@app.route('/ConsultaNITR',methods=['GET'])
+def consulta_NITR():
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoNIT=[]
+    for i in listaDB:
+        if i[4] not in listadoNIT:
+            listadoNIT.append(i[4])
+    return str(listadoNIT)
+
+@app.route('/ObtenerNITR',methods=['POST'])
+def obtener_NITR():
+    xml_data = request.data
+    xml=str(xml_data, 'utf-8')
+    print(xml)
+    root = ET.fromstring(xml)
+    selec = root.find('SELECCIONADO').text.strip()
+    #print(selec)  
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoNIT=[]
+    for i in listaDB:
+        if i[4] not in listadoNIT:
+            listadoNIT.append(i[4])
+
+    listaTransas=[]
+    for i in listaDB:
+        if listadoNIT[int(selec)]==i[4]:
+            listaTransas.append(i)
+#[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    root = ET.Element("LISTAAUTORIZACIONES")
+     
+    for i in listaTransas:
+        doc = ET.SubElement(root, "TRANSACCION")
+        ET.SubElement(doc, "AUTORIZACION").text=str(i[0])
+        ET.SubElement(doc, "TIEMPO").text=str(i[1])
+        ET.SubElement(doc, "REFERENCIA").text=str(i[2])
+        ET.SubElement(doc, "NIT_EMISOR").text=str(i[3])
+        ET.SubElement(doc, "NIT_RECEPTOR").text=str(i[4])
+        ET.SubElement(doc, "VALOR").text=str(i[5])
+        ET.SubElement(doc, "IVA").text=str(i[6])
+        ET.SubElement(doc, "TOTAL").text=str(i[7])
+        
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+
+    return str(xmlstr)
+
+@app.route('/ConsultaFecha',methods=['GET'])
+def consulta_Fecha():
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoFecha=[]
+    for i in listaDB:
+        if i[1] not in listadoFecha:
+            listadoFecha.append(i[1])
+    return str(listadoFecha)
+
+@app.route('/ObtenerFecha',methods=['POST'])
+def obtener_Fecha():
+    xml_data = request.data
+    xml=str(xml_data, 'utf-8')
+    print(xml)
+    root = ET.fromstring(xml)
+    selec = root.find('SELECCIONADO').text.strip()
+    #print(selec)
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listadoFecha=[]
+    for i in listaDB:
+        if i[2] not in listadoFecha:
+            listadoFecha.append(i[2])
+
+    listaTransas=[]
+    for i in listaDB:
+        if listadoFecha[int(selec)]==i[2]:
+            listaTransas.append(i)
+#[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    root = ET.Element("LISTAAUTORIZACIONES")
+     
+    for i in listaTransas:
+        doc = ET.SubElement(root, "TRANSACCION")
+        ET.SubElement(doc, "AUTORIZACION").text=str(i[0])
+        ET.SubElement(doc, "TIEMPO").text=str(i[1])
+        ET.SubElement(doc, "REFERENCIA").text=str(i[2])
+        ET.SubElement(doc, "NIT_EMISOR").text=str(i[3])
+        ET.SubElement(doc, "NIT_RECEPTOR").text=str(i[4])
+        ET.SubElement(doc, "VALOR").text=str(i[5])
+        ET.SubElement(doc, "IVA").text=str(i[6])
+        ET.SubElement(doc, "TOTAL").text=str(i[7])
+        
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+
+    return str(xmlstr)
 
 @app.route('/ResumenIva',methods=['GET'])
 def resumen_iva():

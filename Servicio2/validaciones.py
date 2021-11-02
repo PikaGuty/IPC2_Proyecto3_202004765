@@ -95,10 +95,14 @@ class validaciones():
                 numero = nit[::-1]
                 suma=0
                 contador=0
-                mul=1
+                mul=2
                 for n in numero:
-                    suma+=(int(n)*mul)
-                    mul+=1
+                    if mul !=7:
+                        suma+=(int(n)*mul)
+                        mul+=1
+                    else:
+                        suma+=(int(n)*mul)
+                        mul=1
                 
                 mod1=suma%11
                 val=11-mod1
@@ -107,6 +111,7 @@ class validaciones():
                 if u.upper()==str(val):
                     return True
                 else:
+                    print(val)
                     return False
             else:
                 return False
