@@ -34,10 +34,10 @@
                   Peticiones
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="{% url 'CDatos' %}">Consultar Datos</a></li>
-                  <li><a class="dropdown-item" href="{% url 'RIVA' %}">Resumen de IVA por fecha y NIT</a></li>
+                  <li><a class="dropdown-item" href="{% url 'RIVA' %}">Resumen de IVA por NIT Emisor</a></li>
+                  <li><a class="dropdown-item" href="{% url 'RIVANR' %}">Resumen de IVA por NIT Receptor</a></li>
+                  <li><a class="dropdown-item" href="{% url 'RIVAF' %}">Resumen de IVA por fecha</a></li>
                   <li><a class="dropdown-item" href="{% url 'RFechas' %}">Resumen por rango de fechas</a></li>
-                  <li><a class="dropdown-item" href="{% url 'Grafica' %}">Gráfica</a></li>
                   <li><a class="dropdown-item" href="{% url 'RPDF' %}">Reporte en PDF</a></li>
                 </ul>
               </li>

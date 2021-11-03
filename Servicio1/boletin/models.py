@@ -47,5 +47,6 @@ class FECHA(models.Model):
         st=(c,i.split('\'')[1])
         c+=1
         tup.append(st)
-    nit=models.IntegerField(null=False, blank=False, choices=tup)
+    fecha=models.IntegerField(null=False, blank=False, choices=tup)
+    #f=models.IntegerField(null=False, blank=False, choices=[(1,'con IVA'),(2,'sin IVA')])
 

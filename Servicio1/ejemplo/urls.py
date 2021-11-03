@@ -16,14 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from boletin.views import inicio, cargar_archivo, consulta_datos, resumen_iva,resumen_fechas,grafica,reporte_pdf
+from boletin.views import inicio, cargar_archivo, consulta_datos, resumen_iva,resumen_fechas,grafica,reporte_pdf, resumen_ivaf, resumen_ivanr
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', inicio, name='Inicio'),
     path('cargar_archivo/',cargar_archivo, name="CArchivo"),   
     path('consulta_datos/',consulta_datos, name="CDatos"),   
-    path('resumen_iva/',resumen_iva, name="RIVA"),  
+    path('resumen_iva_nitE/',resumen_iva, name="RIVA"),  
+    path('resumen_iva_nitR/',resumen_ivanr, name="RIVANR"),  
+    path('resumen_iva_fecha/',resumen_ivaf, name="RIVAF"),  
     path('resumen_fechas/',resumen_fechas, name="RFechas"),
     path('grafica/',grafica, name="Grafica"),   
     path('reporte_pdf/',reporte_pdf, name="RPDF"), 

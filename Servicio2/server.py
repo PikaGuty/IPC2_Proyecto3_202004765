@@ -273,8 +273,9 @@ def consulta_Fecha():
     #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
     listadoFecha=[]
     for i in listaDB:
-        if i[1] not in listadoFecha:
-            listadoFecha.append(i[1])
+        if str(i[1]).split(' ')[0] not in listadoFecha:
+            listadoFecha.append(str(i[1]).split(' ')[0])
+            #print(str(i[1].split(' ')[0]))
     return str(listadoFecha)
 
 @app.route('/ObtenerFecha',methods=['POST'])
@@ -290,12 +291,12 @@ def obtener_Fecha():
     #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
     listadoFecha=[]
     for i in listaDB:
-        if i[2] not in listadoFecha:
-            listadoFecha.append(i[2])
-
+        if str(i[1]).split(' ')[0] not in listadoFecha:
+            listadoFecha.append(str(i[1]).split(' ')[0])
+    
     listaTransas=[]
     for i in listaDB:
-        if listadoFecha[int(selec)]==i[2]:
+        if str(listadoFecha[int(selec)].split(' ')[0])==str(i[1]).split(' ')[0]:
             listaTransas.append(i)
 #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
     root = ET.Element("LISTAAUTORIZACIONES")

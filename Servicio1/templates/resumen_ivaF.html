@@ -29,7 +29,7 @@
             <div class="card-body text-center" style="border-radius: 20px;">
                 <!-- Icon -->
                 <div>
-                    <h4 style="font-family: Optima;">Resumen IVA por NIT Emisor</h4>
+                    <h4 style="font-family: Optima;">Resumen IVA por Fecha</h4>
                     <hr>
                 </div>
 
@@ -42,17 +42,20 @@
 
                 <br><br><br>
                 {% if mostrar%}
+                
                 <table class="table table-light">
                   <thead class="table-dark">
                     <tr>
-                      <td colspan="5">Para {{NIT}} como Emisor</td>
+                      <td colspan="7">{{FECHA}}</td>
                     </tr>
                     <tr>
                       <th scope="col">Autorizacion</th>
-                      <th scope="col">Fecha</th>
                       <th scope="col">Referencia</th>
-                      <th scope="col">IVA Emitido</th>
-                      <th scope="col">IVA Recibido</th>
+                      <th scope="col">NIT Emisor</th>
+                      <th scope="col">NIT Receptor</th>
+                      <th scope="col">Precio</th>
+                      <th scope="col">IVA</th>
+                      <th scope="col">Total</th>
                     </tr>
                     
                   </thead>
@@ -66,12 +69,16 @@
                   {% endfor %}
                   </tbody>
                 </table>
+                <h1>En {{FECHA}}</h1>
                 {% endif %}
                 <br><br><br>
                 
+
                 <div id="formFooter">
                   {% if mostrar%}
-                  <img src="{{grafica}}" alt="Grafica">
+                    {% for i in grafica%}
+                      <img src="{{i}}" alt="Grafica">
+                    {% endfor %}
                   {% endif %}
                 </div>
             </div>

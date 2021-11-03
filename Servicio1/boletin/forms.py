@@ -36,11 +36,15 @@ class nitrForm(forms.ModelForm):
 class fForm(forms.ModelForm):
     class Meta:
         model=FECHA
-        fields=['nit']
+        fields=['fecha']
 
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
 
-        self.fields['nit'].widget.attrs.update({
+        self.fields['fecha'].widget.attrs.update({
             'class': 'form-control'
         })
+        '''self.fields['f'].widget.attrs.update({
+            'class': 'form-control'
+        })'''
+        
