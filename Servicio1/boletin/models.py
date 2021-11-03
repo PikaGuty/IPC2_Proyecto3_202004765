@@ -50,3 +50,9 @@ class FECHA(models.Model):
     fecha=models.IntegerField(null=False, blank=False, choices=tup)
     #f=models.IntegerField(null=False, blank=False, choices=[(1,'con IVA'),(2,'sin IVA')])
 
+class MyModel(models.Model):
+    my_date = models.DateField('my date')
+    
+
+class IVA(models.Model):
+    iva=models.IntegerField(null=False, blank=False, choices=[(1,'Con IVA'),(2,'Sin IVA')])

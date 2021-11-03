@@ -29,7 +29,7 @@
     </style>
     <!-- Incluyendo barra superior -->
     {% include "barra.html" %}
-    <br><br><br><br><br><br>
+    <br><br>
     {% if messages%}
     <center>
         <ul class="messages">
@@ -39,44 +39,33 @@
         </ul>
     </center>
     {% endif %}
-    <div class="container mt-5">
-        <div class="row">
-          <div class="card" style="width: 25rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
-          background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
-          background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-          ">
-              <div class="card-body text-center" style="border-radius: 20px;">
-                  <div>
-                      <h4 style="font-family: Optima;">Cargar Archivo XML</h4>
-                      <hr>
-                  </div>
-  
-                  <!-- Form  Cargar-->
-                  
-                <form method="POST" action="">{% csrf_token %}
-                    {{el_form.as_p}}
-                    <input type="submit" class="btn btn-success" value="Cargar"/>
-                </form>
-                  
-                  <div id="formFooter">
-                    {% if messages%}
-                      <ul class="messages">
-                          {% for message in messages%}
-                          {% load static %}
-                          <form action="{% static 'salida.xml'%}">
-                            <input type="submit" class='btn btn-link' value="Abrir archivo XML" />
-                          </form>
-                          {% endfor %}
-                      </ul>
-                      
-                      {% endif %}
-                  </div>
-              </div>
-          </div> 
-        </div>
-      </div>
 
-      <div class="container mt-5">
+    <div class="container mt-5">
+      <div class="row">
+        <div class="card" style="width: 35rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        ">
+            <div class="card-body text-center" style="border-radius: 20px;">
+                <div>
+                    <h4 style="font-family: Optima;">Cargar Archivo XML</h4>
+                    <hr>
+                </div>
+
+                <!-- Form  Cargar-->
+                
+              <form method="POST" enctype="multipart/form-data">{% csrf_token %}
+                 <input type="file" id="doc" name="doc"><br>
+                  
+                  <input type="submit" class="btn btn-success" value="Cargar"/>
+              </form>
+                
+                
+            </div>
+        </div> 
+      </div>
+    </div>
+    <div class="container mt-5">
         <div class="row">
           <div class="card" style="width: 35rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
           background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
@@ -98,18 +87,49 @@
                   <div id="formFooter">
                     {% if messages%}
                       <ul class="messages">
-                        {% for message in messages%}
-                          <li{% if message.tags %} class='{{message.tags}}'{% endif %}>{{message}}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                          {% for message in messages%}
+                          {% load static %}
+                          <form action="{% static 'salida.xml'%}">
+                            <input type="submit" class='btn btn-link' value="Abrir archivo XML" />
+                          </form>
+                          {% endfor %}
+                      </ul>
+                      
+                      {% endif %}
                   </div>
               </div>
           </div> 
         </div>
       </div>
+
+      {% if MOSTRAR %}
+      <div class="container mt-5">
+        <div class="row">
+          <div class="card" style="width: 35rem; margin:0 auto; float: none; margin-bottom: 30px; background: #FDC830;  /* fallback for old browsers */
+          background: -webkit-linear-gradient(to right, #F37335, #FDC830);  /* Chrome 10-25, Safari 5.1-6 */
+          background: linear-gradient(to right, #F37335, #FDC830); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+          ">
+              <div class="card-body text-center" style="border-radius: 20px;">
+                  <div>
+                      <h4 style="font-family: Optima;">Salida</h4>
+                      <hr>
+                  </div>
+  
+                  <!-- Form  Cargar-->
+                  
+                <div>
+                  <textarea class="form-control" id="exampleFormControlTextarea1" rows="20">{{XML}}</textarea>
+                    
+                </div>
+                  
+                  
+              </div>
+          </div> 
+        </div>
+      </div>
+      {% endif %}
       
-      <br><br><br><br><br>
+      <br>
       <div style='text-align: right;' >
         <form method="GET" action="http://192.168.1.9:3000/ReiniciarDatos">
           <input type="submit" class='btn btn-danger' value="Reiniciar Datos" />&nbsp;&nbsp;&nbsp;&nbsp;

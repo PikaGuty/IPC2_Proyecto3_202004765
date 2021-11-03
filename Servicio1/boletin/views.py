@@ -1,11 +1,12 @@
 from xml.dom import minidom
+from django.core.files import uploadedfile
 from django.shortcuts import render
 from django.contrib.staticfiles.storage import staticfiles_storage
 from flask import json
 import requests
 import webbrowser
 import pdfkit
-from .forms import RegForm, fForm, nitrForm, teForm, nitForm
+from .forms import RegForm, fForm, nitrForm, rangoForm, teForm, nitForm
 import xml.etree.ElementTree as ET
 from django.contrib import messages
 
@@ -18,12 +19,24 @@ def cargar_archivo(request):
     form = RegForm(request.POST or None)
     form2 = teForm(request.POST or None)
     contenido=''
-    if form.is_valid():
-        form_data=form.cleaned_data
-        ruta=form_data.get("ruta")
-        with open(ruta,"r") as archivo:
+    xml=''
+    mostrar=False
+    if request.method =='POST':
+        #form_data=form.cleaned_data
+        uploaded_file=request.FILES['doc']
+        #ruta=uploaded_file.path
+        print(type(uploaded_file.read()))
+        contenido=str(uploaded_file.read(), 'utf-8')
+        
+        '''ruta=form.files.get(key='ruta')
+        print(ruta)'''
+        str_text=''
+        for line in uploaded_file:
+            str_text = str_text + line.decode()
+        contenido=str_text
+        '''with open(ruta,"r") as archivo:
             for linea in archivo:
-                contenido+=str(linea)
+                contenido+=str(linea)'''
         
         
         #root = ET.fromstring(contenido)
@@ -33,7 +46,7 @@ def cargar_archivo(request):
         prepped_requ = req.prepare()
         s = requests.Session()
         http_response = s.send(prepped_requ)
-        print(http_response.text)
+        xml=(http_response.text)
         file = open('static/salida.xml', "w")
         file.write(str(http_response.text))
         file.close()
@@ -41,7 +54,7 @@ def cargar_archivo(request):
 
         print(staticfiles_storage.url('salida.xml'))
         
-        
+        mostrar=True
         #resp = requests.Request('POST','http://192.168.1.8:3000/ObtenerDatos',headers=headers,data=contenido)
 
     if form2.is_valid():
@@ -56,17 +69,19 @@ def cargar_archivo(request):
         prepped_requ = req.prepare()
         s = requests.Session()
         http_response = s.send(prepped_requ)
-        print(http_response.text)
+        xml=(http_response.text)
         file = open('static/salida.xml', "w")
         file.write(str(http_response.text))
         file.close()
         messages.success(request,'Se agrego correctamente')
-
+        mostrar=True
         print(staticfiles_storage.url('salida.xml'))
 
     context = {
         "el_form": form,
         "the_form": form2,
+        "XML":xml,
+        "MOSTRAR":mostrar,
     }
     
     return render(request,"cargar_archivo.html",context)
@@ -462,7 +477,180 @@ def resumen_ivaf(request):
     return render(request,"resumen_ivaF.html",context)
 
 def resumen_fechas(request):
-    return 'hola'
+    form = rangoForm(request.POST or None)
+    contenido=''
+    DatosGrafica=[]
+    mostrar=False
+    strrr=[]
+    listaNIT=[]
+    fecha=''
+    NIT=''
+    lis=[[],[],[],[],[]]
+    if form.is_valid():
+        mostrar=True
+        form_data=form.cleaned_data
+        fecha1=form_data.get("fecha_inicio")
+        fecha2=form_data.get("fecha_final")
+        valiva=form_data.get("iva")
+        
+        a = ET.Element('SOLICITUD') 
+        ET.SubElement(a, 'FINICIO').text=str(fecha1)
+        ET.SubElement(a, 'FFINAL').text=str(fecha2)
+        xmlstr = minidom.parseString(ET.tostring(a)).toprettyxml(indent="   ")
+        print(xmlstr)
+        headers = {'Content-Type': 'text/xml; charset=utf-8', }
+        
+        req = requests.Request('POST', 'http://192.168.1.9:3000/ResumenRango',headers=headers,data=xmlstr)
+        prepped_requ = req.prepare()
+        s = requests.Session()
+        http_response = s.send(prepped_requ)
+        quickchart_url = 'https://quickchart.io/chart/create'
+
+        root = ET.fromstring(http_response.text)
+        listaNIT=[]
+        ir=[]
+        ie=[]
+        ref=[]
+        val=[]
+        horas=[]
+        nits=[]
+        primera=False
+        for DTE in root.findall('TRANSACCION'):
+            existe=True
+            autorizacion = DTE.find('AUTORIZACION').text.strip()
+            tiempo = DTE.find('TIEMPO').text.strip()
+            referencia = DTE.find('REFERENCIA').text.strip()
+            ref.append(referencia)
+            nit_emisor = DTE.find('NIT_EMISOR').text.strip()
+            nit_receptor = DTE.find('NIT_RECEPTOR').text.strip()
+            NIT=nit_receptor
+            fecha=tiempo.split(' ')[0]
+            horas.append(tiempo.split(' ')[1])
+            
+            valor = DTE.find('VALOR').text.strip()
+            val.append(float(valor))
+            iva = DTE.find('IVA').text.strip()
+            ie.append(float(iva))
+            total = DTE.find('TOTAL').text.strip()
+            ir.append(float(total))
+            if str(valiva) == '2':
+                listaNIT.append([autorizacion,referencia,nit_emisor,nit_receptor,valor])
+            else:
+                listaNIT.append([autorizacion,referencia,nit_emisor,nit_receptor,total])
+
+            lis[0].append(nit_receptor)
+            lis[1].append(valor)
+            lis[2].append(iva)
+            lis[3].append(total)
+            lis[4].append(tiempo.split(' ')[0])
+            
+                
+                    
+            nits.append(NIT)
+            primera=True
+        print('IVA: '+str(valiva))
+        if str(valiva) == '2':
+            print(DatosGrafica)
+            post_data = {'chart': {
+            'type': 'line',
+            'data': {
+                    'labels': lis[4],
+                    'datasets': [
+                    {
+                        'label': 'Sin IVA',
+                        'backgroundColor': 'rgb( 110, 255, 51)',
+                        'borderColor': 'rgb( 110, 255, 51)',
+                        'fill': 'false',
+                        'data': lis[1],
+                    },
+                    
+                    ],
+                },
+                'options': {
+                'title': {
+                'display': 'true',
+                'text': 'Moviemientos entre '+str(fecha1).split('-')[2]+'/'+str(fecha1).split('-')[1]+'/'+str(fecha1).split('-')[0]+' y '+str(fecha2).split('-')[2]+'/'+str(fecha2).split('-')[1]+'/'+str(fecha2).split('-')[0],
+                },
+                
+            },
+            },
+            }
+
+            response = requests.post(
+                quickchart_url,
+                json=post_data
+            )
+            #print(listaNIT[0][0])
+
+            if (response.status_code != 200):
+                print('Error:', response.text)
+            else:
+                chart_response = json.loads(response.text)
+                print(chart_response)
+                strrr.append(chart_response['url'])
+
+        else:
+            print(DatosGrafica)
+            post_data = {'chart': {
+            'type': 'line',
+            'data': {
+                    'labels': lis[4],
+                    'datasets': [
+                    
+                    {
+                        'label': 'Total',
+                        'backgroundColor': 'rgb(54, 162, 235)',
+                        'borderColor': 'rgb(54, 162, 235)',
+                        'fill': 'false',
+                        'data': lis[3],
+                    },
+                    ],
+                },
+                'options': {
+                'title': {
+                'display': 'true',
+                'text': 'Moviemientos entre '+str(fecha1).split('-')[2]+'/'+str(fecha1).split('-')[1]+'/'+str(fecha1).split('-')[0]+' y '+str(fecha2).split('-')[2]+'/'+str(fecha2).split('-')[1]+'/'+str(fecha2).split('-')[0],
+                
+                },
+                
+            },
+            },
+            }
+
+            response = requests.post(
+                quickchart_url,
+                json=post_data
+            )
+            #print(listaNIT[0][0])
+
+            if (response.status_code != 200):
+                print('Error:', response.text)
+            else:
+                chart_response = json.loads(response.text)
+                print(chart_response)
+                strrr.append(chart_response['url'])
+
+        
+        
+    context = {
+        "el_form": form,
+        "mostrar":mostrar,
+        "grafica":strrr,
+        "listaNIT":listaNIT,
+        "FECHA":fecha,
+        "NIT": NIT,
+        "valiva":str(valiva),
+        "ENTRE":'Moviemientos entre '+str(fecha1).split('-')[2]+'/'+str(fecha1).split('-')[1]+'/'+str(fecha1).split('-')[0]+' y '+str(fecha2).split('-')[2]+'/'+str(fecha2).split('-')[1]+'/'+str(fecha2).split('-')[0],
+                
+    }   
+    
+    #pdfkit.from_url('http://127.0.0.1:8000/resumen_iva_fecha/','shaurya.pdf') 
+    for i in strrr:
+        pdf.append('<h2>En la fecha '+fecha+' el resumen del NIT '+NIT+' es:</h2>')
+        pdf.append('<img src="'+i+'" alt="Grafica">')    
+    
+    return render(request,"resumen_fechas.html",context)
+
 
 def grafica(request):
     return 'hola'

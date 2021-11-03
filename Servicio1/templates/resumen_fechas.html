@@ -19,35 +19,83 @@
     </style>
     <!-- Incluyendo barra superior -->
     {% include "barra.html" %}
-
+    <br><br><br>
     <div class="container mt-5">
       <div class="row">
-        <div class="card" style="width: 25rem; margin:0 auto; float: none; margin-bottom: 15px; background: #FFEFBA;  /* fallback for old browsers */
+        <div class="card" style="max-width: max-content; margin:0 auto; float: none; margin-bottom: 15px; background: #FFEFBA;  /* fallback for old browsers */
         background: -webkit-linear-gradient(to right, #FFFFFF, #FFEFBA);  /* Chrome 10-25, Safari 5.1-6 */
         background: linear-gradient(to right, #FFFFFF, #FFEFBA); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         ">
             <div class="card-body text-center" style="border-radius: 20px;">
                 <!-- Icon -->
                 <div>
-                    <h4 style="font-family: Optima;">Resumen Fechas</h4>
-                    <hr>
+                  <h2>Resumen por rango de fechas</h2>
+                  <hr>
                 </div>
+                <form action="" method="post">{% csrf_token %}
+                  {{ el_form.as_p }}
+                  <input type="submit" value="Consultar" class="btn btn-info"/>
+                </form>
 
                 <!-- Login Form -->
                 
-                <form name="formulario" method="post" action="/send.php" enctype="multipart/form-data">
-                  <input type="file" name="adjunto" accept=".pdf,.jpg,.png" multiple /><br><br>
-                  <button class="btn btn-success mt-2" (click)="inicio()">Ingresar</button>
-                </form>
-                
+                <br><br><br>
                 <div id="formFooter">
-                    <!-- <a class="underlineHover mt-3" href="#">Registrarse</a> -->
+                  {% if mostrar%}
+                
+                  <table class="table table-light">
+                    <thead class="table-dark">
+                      <tr>
+                        <td colspan="7">{{ENTRE}}</td>
+                      </tr>
+                      {% if valiva == '2' %}
+                        <tr>
+                          <th scope="col">Autorizacion</th>
+                          <th scope="col">Referencia</th>
+                          <th scope="col">NIT Emisor</th>
+                          <th scope="col">NIT Receptor</th>
+                          <th scope="col">Sin IVA</th>
+                          
+                        </tr>
+                      {% else %}
+                        <tr>
+                          <th scope="col">Autorizacion</th>
+                          <th scope="col">Referencia</th>
+                          <th scope="col">NIT Emisor</th>
+                          <th scope="col">NIT Receptor</th>
+                          
+                          <th scope="col">Total</th>
+                        </tr>
+                      {% endif %}  
+                    </thead>
+                    <tbody>
+                    {% for i in listaNIT%}
+                        <tr>
+                          {% for j in i%}
+                            <td>{{j}}</td>
+                          {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                  
+                  {% endif %}
+                  <br><br><br>
+                  
+  
+                  <div id="formFooter">
+                    {% if mostrar%}
+                      {% for i in grafica%}
+                        <img src="{{i}}" alt="Grafica">
+                      {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
       </div>
     </div>
-<br>
+    </div>
+<br><br><br><br>
     
 
     <!-- Incluyendo footer -->

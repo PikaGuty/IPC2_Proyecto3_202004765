@@ -316,13 +316,48 @@ def obtener_Fecha():
 
     return str(xmlstr)
 
-@app.route('/ResumenIva',methods=['GET'])
-def resumen_iva():
-    return 'Resumen de Iva'
-
-@app.route('/ResumenRango',methods=['GET'])
+@app.route('/ResumenRango',methods=['POST'])
 def resumen_rango():
-    return 'Resumen Rango'
+    xml_data = request.data
+    xml=str(xml_data, 'utf-8')
+    print(xml)
+    root = ET.fromstring(xml)
+    f1 = root.find('FINICIO').text.strip()
+    fe1 = f1.split('-')[2]+'/'+f1.split('-')[1]+'/'+f1.split('-')[0]
+    fecha1 = datetime.strptime(fe1, '%d/%m/%Y')
+    
+    f2 = root.find('FFINAL').text.strip()
+    fe2 = f2.split('-')[2]+'/'+f2.split('-')[1]+'/'+f2.split('-')[0]
+    fecha2 = datetime.strptime(fe2, '%d/%m/%Y')
+
+    listaDB=[]
+    db.obtener(listaDB)
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    listaTransas=[]
+    for i in listaDB:
+        fechaA = datetime. strptime(str(i[1]).split(' ')[0], '%d/%m/%Y')
+        if fecha1 <= fechaA <= fecha2:
+            listaTransas.append(i)
+    
+    
+    
+    #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
+    root = ET.Element("LISTAAUTORIZACIONES")
+     
+    for i in listaTransas:
+        doc = ET.SubElement(root, "TRANSACCION")
+        ET.SubElement(doc, "AUTORIZACION").text=str(i[0])
+        ET.SubElement(doc, "TIEMPO").text=str(i[1])
+        ET.SubElement(doc, "REFERENCIA").text=str(i[2])
+        ET.SubElement(doc, "NIT_EMISOR").text=str(i[3])
+        ET.SubElement(doc, "NIT_RECEPTOR").text=str(i[4])
+        ET.SubElement(doc, "VALOR").text=str(i[5])
+        ET.SubElement(doc, "IVA").text=str(i[6])
+        ET.SubElement(doc, "TOTAL").text=str(i[7])
+        
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+    print(xmlstr)
+    return str(xmlstr)
 
 @app.route('/Grafica',methods=['GET'])
 def grafica():
