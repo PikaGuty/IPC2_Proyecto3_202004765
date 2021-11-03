@@ -29,11 +29,11 @@ def cargar_archivo(request):
         contenido=str(uploaded_file.read(), 'utf-8')
         
         '''ruta=form.files.get(key='ruta')
-        print(ruta)'''
+        print(ruta) '''
         str_text=''
         for line in uploaded_file:
             str_text = str_text + line.decode()
-        contenido=str_text
+        contenido=str_text 
         '''with open(ruta,"r") as archivo:
             for linea in archivo:
                 contenido+=str(linea)'''
