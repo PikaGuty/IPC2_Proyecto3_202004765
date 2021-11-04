@@ -486,6 +486,9 @@ def resumen_fechas(request):
     fecha=''
     NIT=''
     lis=[[],[],[],[],[]]
+    valiva=''
+    fecha1='3-11-2021'
+    fecha2='3-11-2021'
     if form.is_valid():
         mostrar=True
         form_data=form.cleaned_data
