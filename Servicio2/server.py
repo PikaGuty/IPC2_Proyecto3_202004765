@@ -335,7 +335,7 @@ def resumen_rango():
     #[autorizacion,tiempo, referencia, nit_emisor, nit_receptor, valor, iva, total]
     listaTransas=[]
     for i in listaDB:
-        fechaA = datetime. strptime(str(i[1]).split(' ')[0], '%d/%m/%Y')
+        fechaA = datetime.strptime(str(i[1]).split(' ')[0], '%d/%m/%Y')
         if fecha1 <= fechaA <= fecha2:
             listaTransas.append(i)
     
