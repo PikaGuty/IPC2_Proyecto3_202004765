@@ -12,10 +12,10 @@ class validaciones():
         self.valp=self.precios(valor,iva,total)
         #print(self.valp)
 
-        self.valne=self.nit(nit_emisor)
+        self.valne=self.nit(nit_emisor,referencia)
         #print(self.valne)
 
-        self.valnr=self.nit(nit_receptor)
+        self.valnr=self.nit(nit_receptor,referencia)
         #print(self.valnr)
 
 
@@ -87,7 +87,7 @@ class validaciones():
 
         return [valor,iva,total]
 
-    def nit(self,nit):
+    def nit(self,nit,referencia):
         try:
             if len(str(nit))>0 and len(str(nit))<22:
                 u=str(nit)[len(str(nit))-1]
@@ -108,9 +108,12 @@ class validaciones():
                 val=11-mod1
                 if val == 10:
                     val='K'
+                if val == 11:
+                    val='0'
                 if u.upper()==str(val):
                     return True
                 else:
+                    print(referencia)
                     print(val)
                     return False
             else:
